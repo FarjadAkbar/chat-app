@@ -5,6 +5,7 @@ export interface IChat extends Document {
     receiver: mongoose.Types.ObjectId;
     room: mongoose.Types.ObjectId;
     content: string;
+    status?: string;
     createdAt: Date;
     updatedAt: Date;
 }
@@ -15,6 +16,7 @@ const chatSchema = new Schema<IChat>({
     receiver: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
     room: { type: mongoose.Schema.Types.ObjectId, ref: 'Room', required: true },
     content: { type: String, required: true },
+    status: { type: String, required: true, default: "sent" },
     createdAt: { type: Date, default: Date.now },
     updatedAt: { type: Date, default: Date.now }
 })
