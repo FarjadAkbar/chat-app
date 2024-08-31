@@ -5,6 +5,7 @@ import { Server } from 'socket.io';
 
 const server = http.createServer(app); // Create an HTTP server instance
 const io = new Server(server, {
+  connectionStateRecovery: {},
   cors: {
     origin: '*', // Adjust CORS settings as needed
   },

@@ -10,9 +10,14 @@ export const initializeChatSocket = (io: Server) => {
   io.on('connection', (socket: Socket) => {
     console.log('A user connected:', socket.id);
 
-    console.log(socket.data.user)
+    const senderId = socket.data.userId;
+    if (!senderId) {
+      socket.disconnect();
+      return;
+    }
+
     // Join a private room based on user IDs
-    socket.on('joinRoom', async ({ senderId, receiverId }) => {
+    socket.on('joinRoom', async ({ receiverId }) => {
       const roomName = [senderId, receiverId].sort().join('-'); // Create a unique room name
 
       // Find or create a room entry in the database
@@ -26,7 +31,7 @@ export const initializeChatSocket = (io: Server) => {
     });
 
     // Handle sending messages
-    socket.on('sendMessage', async ({ senderId, receiverId, content }) => {
+    socket.on('sendMessage', async ({ receiverId, content }, ack) => {
       const roomName = [senderId, receiverId].sort().join('-'); // Create a unique room name
       const room = await Room.findOne({ name: roomName });
 
@@ -34,8 +39,14 @@ export const initializeChatSocket = (io: Server) => {
       const newChat = await Chat.create({ sender: senderId, receiver: receiverId, room: room?._id, content });
 
       // Emit the message to the specific room
-      io.to(roomName).emit('receiveMessage', newChat); // Send the chat object to all users in the room
-    });
+      io.to(roomName).emit('receiveMessage', newChat._id, newChat, (ack: any) => {
+        if(ack === "delivered") {
+          console.log("delivered");
+          newChat.status = "delivered";
+          newChat.save();
+        }
+      }); 
+    });    
 
     // Handle disconnection
     socket.on('disconnect', () => {
