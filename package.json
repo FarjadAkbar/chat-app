@@ -4,6 +4,7 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc",
+    "dev": "tsc & node ./dist/server.js  --watch",
     "test": "jest"
   },
   "keywords": [],
